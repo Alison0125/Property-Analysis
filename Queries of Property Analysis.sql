@@ -1,27 +1,41 @@
+
+/* question 1.a*/
 SELECT p.Name, op.PropertyId 
 FROM dbo.Property as P INNER JOIN dbo.OwnerProperty as OP on p.Id = op.PropertyId
 where op.OwnerId = 1426
 
+/* question 1.b*/
 select p.Name as PropertyName, PH.Value as PropertyValue
 FROM dbo.Property as P Inner Join dbo.OwnerProperty as OP on p.Id = op.PropertyId
 Inner Join dbo.PropertyHomeValue as PH on PH.PropertyId = p.Id
 where op.OwnerId = 1426
-
-SELECT op.OwnerId, sum(DATEDIFF(day, StartDate, EndDate)/7/pay.FrequencyType* pay.Amount) as TotalPayment 
+/* question 1.c i*/
+SELECT op.OwnerId, p.Name,Pay.Amount as Rate,tt.name as PaymentFrequency,
+      Case When tt.name = 'Weekly' then (DATEDIFF(day, Pay.StartDate, Pay.EndDate)/7)*pay.Amount
+	       WHEN tt.name ='Fortnightly' then (DATEDIFF(day, Pay.StartDate, Pay.EndDate)/14)*pay.Amount
+		   ELSE DATEDIFF(day, Pay.StartDate, Pay.EndDate)*pay.Amount 
+	  END AS TotalPayment,
+      Pay.StartDate,Pay.EndDate
 FROM dbo.OwnerProperty as OP Inner Join dbo.Property as P on op.PropertyId = p.Id
 Inner Join dbo.PropertyRepayment as Pay on pay.PropertyId = p.Id
+INNER JOIN dbo.TenantProperty as t on OP.PropertyId=t.PropertyId
+Inner Join dbo.TargetRentType as tt on tt.id= t.PaymentFrequencyId
 where op.OwnerId = 1426
-GROUP By op.OwnerId
 
-SELECT  op.OwnerId, sum(pf.Yield) as TotalYield
+
+
+/* question 1.c.ii*/
+SELECT  op.OwnerId,property.Id as PropertyID, pf.Yield
 FROM dbo.PropertyFinance as PF Inner Join dbo.OwnerProperty as OP on PF.PropertyId = op.PropertyId
+INNER JOIN dbo.Property on Property.Id=op.PropertyId
 where op.OwnerId = 1426
-GROUP By op.OwnerId
 
 
-select * from dbo.job inner join dbo.JobStatus on job.JobStatusId=JobStatus.Id
+/* question 1.d*/
+select job.Id, job.JobDescription,JobStatus.Status from dbo.job inner join dbo.JobStatus on job.JobStatusId=JobStatus.Id
 where JobStatus.Status = 'Open'
 
+/* question 1.e*/
 select p.Name as PropertyName, concat(FirstName,' ', LastName) as TenantName,PR.amount as PayAmont, Fre.Name as PayFrequency
 FROM dbo.OwnerProperty as OP 
 INNER JOIN dbo.PropertyRepayment as PR on OP.PropertyId = PR.PropertyId
@@ -29,9 +43,12 @@ Inner Join dbo.Property as P on op.PropertyId = p.Id
 INNER JOIN dbo.TenantProperty as TP on TP.PropertyId = op.PropertyId
 Inner JOIN dbo.TenantPaymentFrequencies as Fre ON Fre.Id = PR.FrequencyType
 INNER JOIN dbo.Person on person.id = TP.TenantId
+INNER JOIN dbo.Tenant on Tenant.id=TP.TenantId
+INNER JOIN dbo.TargetRentType as t on t.Id=Fre.Id
 where op.OwnerId = 1426
 
 
+/* question 2 */
 SELECT p.Id as PropertyID, OP.id as OwnerID, p.name as PropertyName, concat (A.Number,A.Street,  A.Suburb, A.City,A.PostCode) as Address, p.bedroom, p.bathroom, PE.Amount, PE.Date
 FROM dbo.property P Inner Join dbo.OwnerProperty OP on p.id =op.propertyid
 Inner Join dbo.PropertyExpense PE on PE.PropertyId = p.Id
