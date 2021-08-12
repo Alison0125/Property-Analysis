@@ -11,13 +11,13 @@ Inner Join dbo.PropertyHomeValue as PH on PH.PropertyId = p.Id
 where op.OwnerId = 1426
 /* question 1.c i*/
 SELECT op.OwnerId, p.Name,Pay.Amount as Rate,tt.name as PaymentFrequency,
-      Case When tt.name = 'Weekly' then (DATEDIFF(day, Pay.StartDate, Pay.EndDate)/7)*pay.Amount
-	       WHEN tt.name ='Fortnightly' then (DATEDIFF(day, Pay.StartDate, Pay.EndDate)/14)*pay.Amount
-		   ELSE DATEDIFF(day, Pay.StartDate, Pay.EndDate)*pay.Amount 
+      Case When tt.name = 'Weekly' then (DATEDIFF(day, t.StartDate, t.EndDate)/7)*Pay.Amount
+	       WHEN tt.name ='Fortnightly' then (DATEDIFF(day, t.StartDate, t.EndDate)/14)*Pay.Amount
+		   ELSE DATEDIFF(month, t.StartDate, t.EndDate)*pay.Amount 
 	  END AS TotalPayment,
-      Pay.StartDate,Pay.EndDate
+      t.StartDate,t.EndDate
 FROM dbo.OwnerProperty as OP Inner Join dbo.Property as P on op.PropertyId = p.Id
-Inner Join dbo.PropertyRepayment as Pay on pay.PropertyId = p.Id
+Inner Join dbo.PropertyRentalPayment as Pay on pay.PropertyId = p.Id
 INNER JOIN dbo.TenantProperty as t on OP.PropertyId=t.PropertyId
 Inner Join dbo.TargetRentType as tt on tt.id= t.PaymentFrequencyId
 where op.OwnerId = 1426
@@ -36,15 +36,14 @@ select job.Id, job.JobDescription,JobStatus.Status from dbo.job inner join dbo.J
 where JobStatus.Status = 'Open'
 
 /* question 1.e*/
-select p.Name as PropertyName, concat(FirstName,' ', LastName) as TenantName,PR.amount as PayAmont, Fre.Name as PayFrequency
+select p.Name as PropertyName, concat(FirstName,' ', LastName) as TenantName,PR.amount as PayAmont, t.Name as PayFrequency
 FROM dbo.OwnerProperty as OP 
-INNER JOIN dbo.PropertyRepayment as PR on OP.PropertyId = PR.PropertyId
+INNER JOIN dbo.PropertyRentalPayment as PR on OP.PropertyId = PR.PropertyId
 Inner Join dbo.Property as P on op.PropertyId = p.Id
 INNER JOIN dbo.TenantProperty as TP on TP.PropertyId = op.PropertyId
-Inner JOIN dbo.TenantPaymentFrequencies as Fre ON Fre.Id = PR.FrequencyType
 INNER JOIN dbo.Person on person.id = TP.TenantId
 INNER JOIN dbo.Tenant on Tenant.id=TP.TenantId
-INNER JOIN dbo.TargetRentType as t on t.Id=Fre.Id
+INNER JOIN dbo.TargetRentType as t on t.Id=TP.PaymentFrequencyId
 where op.OwnerId = 1426
 
 
